@@ -1,0 +1,15 @@
+# See 
+# dependencies
+/**/node_modules
+/**/blog_json
+/**/output_test
+.DS_Store
+.env*
+/app/.cache/*
+/app/__pycache__
+/**/.bash_history
+/**/*.tfvars
+/**/.terraform*
+/**/aws_configure.txt
+infra/terraform.tfstate
+infra/terraform.tfstate.backup
