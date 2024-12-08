@@ -19,6 +19,7 @@ doc_db_user = urllib.parse.quote_plus(os.getenv('DOC_DB_USER'))
 doc_db_pass = urllib.parse.quote_plus(os.getenv('DOC_DB_PASS'))
 doc_db_host = urllib.parse.quote_plus(os.getenv('DOC_DB_HOST'))
 url = '%s://%s:%s@%s/' % (doc_db_protocol, doc_db_user, doc_db_pass, doc_db_host)
+print(url)
 client = MongoClient(url)
 db = client["blog"] #DB名を設定
 collection = db.get_collection("posts")
