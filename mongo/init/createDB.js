@@ -1,13 +1,14 @@
 import { MongoClient } from "mongodb";
+import 'dotenv/config'
 
-// 接続情報の設定
+// 接続情報の設定(admin)
 const uri = "mongodb://root:pass@mongo:27017";  // MongoDBサーバーのURI
 const client = new MongoClient(uri);
 
 // データベースおよびユーザー情報
 const dbName = "blog";
-const userName = "blog_user";
-const password = "blog_pass";
+const userName = process.env.DOC_DB_USER;
+const password = process.env.DOC_DB_PASS;
 const collectionName = "posts";
 
 async function main() {

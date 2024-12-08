@@ -47,17 +47,18 @@ async function migrateData() {
         }
     })
 
-    const username = process.env.MONGO_DB_USER;
-    const password = encodeURIComponent(process.env.MONGO_DB_PASS);
-    const url = process.env.MONGO_DB_HOST
-    const uri = `mongodb+srv://${username}:${password}@${url}/`;
+    const protocol = process.env.DOC_DB_PROTOCOL;
+    const username = process.env.DOC_DB_USER;
+    const password = encodeURIComponent(process.env.DOC_DB_PASS);
+    const url = process.env.DOC_DB_HOST
+    const uri = `${protocol}://${username}:${password}@${url}/`;
 
     // MongoDBに接続
     mongoClient = new MongoClient(uri);
     await mongoClient.connect();
     const mongoDb = mongoClient.db(mongoDbName);
 
-    //await mongoDb.collection("labels").insertMany(terms2);
+    await mongoDb.collection("labels").insertMany(terms2);
     // データを変換してMongoDBに挿入
     let count = 0;
     let posts_for_insert = [];
