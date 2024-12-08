@@ -2,12 +2,18 @@ version: "3"
 services:
   python_lambda:
     container_name: "blog_python_lambda"
+    build:
+      context: "./"
+      dockerfile: "Dockerfile"
     volumes:
         - ./app:/var/task
+    environment:
+      - DOC_DB_USER
+      - DOC_DB_PASS
     ports:
       - 9000:8080
     networks:
-      - blog_backend          
+      - blog_backend
 
   mongo_node:
     container_name: "blog_mongo_node"

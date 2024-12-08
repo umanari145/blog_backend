@@ -3,7 +3,6 @@
 [blog](https://github.com/umanari145/blog)のapp(backend)を切り出し
 
 ### GitHubActions
-
 - CI/CDのワークフロー
     1. mainブランチへのマージ
     2. ECRにログイン
@@ -13,11 +12,7 @@
 ### mongoのdbのセットアップ 
 
 - init/createDB.js データベースやユーザー作成
-- output ブログデータ
-- output_test ブログテストデータ
 - convet_contents.js データ読み込みとmongoへの直投入
-- load_contents.js データ読み込み(markdownからの読み込み)
-- delete_contents.js データ全削除
 
 ```
 docker exec -it blog_node sh
@@ -34,9 +29,6 @@ Connection to MongoDB closed
 
 # データ読み込み
 node load_contents.js
-
-# データ全削除
-node delete_contents.js
 
 ```
 ### mongodbの実環境
@@ -71,7 +63,7 @@ https://qiita.com/eiji-noguchi/items/e226ed7b8da2cd85a06a
 ローカルデバッグ
 ```
 # -f function・・軌道関数
-# -e environment・・環境変数
+# -e environment・・環境変数(dockerで定義してれば不要)
 # -t timeout・・秒数　-e 環境変数
 python-lambda-local -f handler lambda_function.py event/****.json -e env.json -t 10
 ```
@@ -85,8 +77,8 @@ python lambda_function_test.py
 ## 環境変数登録(GithubActions)
 ```
 gh auth login
-gh secret set AWS_ACCOUNT_ID --body "$AWS_ACCOUNT_ID" --repo umanari145/blog
-gh secret set AWS_ACCESS_KEY_ID --body "$AWS_ACCESS_KEY_ID" --repo umanari145/blog
-gh secret set AWS_SECRET_ACCESS_KEY --body "$AWS_SECRET_ACCESS_KEY" --repo umanari145/blog
-gh secret set AWS_REGION --body "$AWS_REGION" --repo umanari145/blog
+gh secret set AWS_ACCOUNT_ID --body "$AWS_ACCOUNT_ID" --repo umanari145/blog_backend
+gh secret set AWS_ACCESS_KEY_ID --body "$AWS_ACCESS_KEY_ID" --repo umanari145/blog_backend
+gh secret set AWS_SECRET_ACCESS_KEY --body "$AWS_SECRET_ACCESS_KEY" --repo umanari145/blog_backend
+gh secret set AWS_REGION --body "$AWS_REGION" --repo umanari145/blog_backend
 ```
