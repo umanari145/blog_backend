@@ -1,15 +1,16 @@
 import unittest
 import os
+from pymongo import MongoClient
 from unittest.mock import patch, MagicMock
 from ddt import ddt, data, unpack
-#from bson.objectid import ObjectId
-#import json
+import json
 
 # ハンドラー関数が定義されたファイルからインポートします。
-from lambda_function import make_query
+from lambda_function import make_query, get_blogs
 
 @ddt
 class TestBlogHandler(unittest.TestCase):
+
     @data(
         ({"page_no": 1}, {"where": {}, "current_page": 1, "offset": 0}),
         ({"page_no": 3}, {"where": {}, "current_page": 3, "offset": 20}),
@@ -30,6 +31,31 @@ class TestBlogHandler(unittest.TestCase):
             self.assertEqual(query["pipeline"], expected)
         else:
             self.assertEqual(query, expected)
+
+    @data(
+        ({"page_no": 1}, {"total_items_count": 1002, "total_pages": 101, "current_page": 1}),
+        ({"page_no": 3}, {"total_items_count": 1002, "total_pages": 101, "current_page": 3}),
+        ({"category": "perl", "page_no": 1}, {"total_items_count": 17, "total_pages": 2, "current_page": 1}),
+        ({"tag": "npm", "page_no": 2}, {"total_items_count": 24, "total_pages": 3, "current_page": 2}),
+        ({"year": "2017", "month": "03", "page_no": 2}, {"total_items_count": 23, "total_pages": 3, "current_page": 2}),
+        ({"tag": "hogehoge", "page_no": 2}, {"error": "not found"}),
+    )
+    @unpack
+    @patch('lambda_function.app')  # app をモックする
+    def test_get_blogs(self, input_data, expected, mock_app):
+
+        mock_event = MagicMock()
+        mock_event.get_query_string_value.side_effect = lambda name, default_value: input_data.get(name, "")
+        mock_app.current_event = mock_event
+
+        res = get_blogs()
+        res2 = json.loads(res["body"])
+
+        if "items" in res2:
+            del res2["items"]
+        if "per_one_page" in res2:
+            del res2["per_one_page"]
+        self.assertEqual(res2, expected)
 
     #@patch("blog_handler.collection")
     #def test_get_blog_found(self, mock_collection):

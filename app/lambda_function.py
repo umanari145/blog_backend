@@ -14,9 +14,11 @@ cors_config = CORSConfig(allow_origin="*", max_age=300)
 app = APIGatewayRestResolver(cors=cors_config)
 
 # DocumentDB クライアントの設定
+doc_db_protocol = urllib.parse.quote_plus(os.getenv('DOC_DB_PROTOCOL'))
 doc_db_user = urllib.parse.quote_plus(os.getenv('DOC_DB_USER'))
 doc_db_pass = urllib.parse.quote_plus(os.getenv('DOC_DB_PASS'))
-url = 'mongodb+srv://%s:%s@skill-up-engineering.q3kqc.mongodb.net/' % (doc_db_user, doc_db_pass)
+doc_db_host = urllib.parse.quote_plus(os.getenv('DOC_DB_HOST'))
+url = '%s://%s:%s@%s/' % (doc_db_protocol, doc_db_user, doc_db_pass, doc_db_host)
 client = MongoClient(url)
 db = client["blog"] #DB名を設定
 collection = db.get_collection("posts")
@@ -108,7 +110,17 @@ def get_blogs():
         return respond(500, {"error": str(e), "stack_trace": stack_trace})
 
 def make_response(items, query):
-    total_items_count = collection.count_documents(query["where"])
+    if "pipeline" in query:
+        count_pipeline = [
+            query["pipeline"][0], #lookup
+            query["pipeline"][1], #match
+            {"$count": "total_items_count"}
+        ]
+        count_res = list(collection.aggregate(count_pipeline))
+        total_items_count = count_res[0]["total_items_count"]
+    else:
+        total_items_count = collection.count_documents(query["where"])
+
     total_pages = (total_items_count + per_one_page - 1) // per_one_page  # 総ページ数を計算
     
     # 指定範囲のデータを取得
