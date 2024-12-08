@@ -17,7 +17,6 @@ class TestBlogHandler(unittest.TestCase):
         # localでの管理者権限
         uri = "mongodb://root:pass@mongo:27017"
         cls.client = pymongo.MongoClient(uri)
-        cls.client.drop_database("blogs")
         cls.blogs = cls.client["blog"]
         cls.posts = cls.blogs["posts"]
         cls.labels = cls.blogs["labels"]

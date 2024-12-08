@@ -75,6 +75,10 @@ python-lambda-local -f handler lambda_function.py event/****.json -e env.json -t
 docker exec -it blog_python_lambda bash
 python lambda_function_test.py 
 ```
+dockerの外から
+```
+docker exec blog_python_lambda python lambda_function_test.py
+```
 
 ## 環境変数登録(GithubActions)
 ```
