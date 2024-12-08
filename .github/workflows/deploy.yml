@@ -1,14 +1,28 @@
-name: Build and Push Docker Image to ECR
+name: Test and Push Docker Image to ECR and Update Lambda
 
 on:
   push:
     branches:
-      - hogehoge
+      - master
 
 jobs:
-  build-and-push:
+  test:
     runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: setup python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.12'
+          architecture: 'x64'
+      - name: get python version
+        run: python -V
+      - name: unittest for python
+        run: python lambda_function_test.py
 
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4

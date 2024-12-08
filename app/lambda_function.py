@@ -3,6 +3,7 @@ import os
 import json
 import re
 import urllib
+import traceback
 from pymongo import MongoClient
 from bson.objectid import ObjectId
 from bson import json_util
@@ -28,8 +29,10 @@ def make_query():
     year = app.current_event.get_query_string_value(name="year", default_value="")
     month = app.current_event.get_query_string_value(name="month", default_value="")
     search_word = app.current_event.get_query_string_value(name="month", default_value="")
+    current_page = app.current_event.get_query_string_value(name="page_no", default_value=1)
     query = {}
     where = {}
+
     if category:
         query["pipeline"] = make_pipeline("categories", "category", category)
     elif tag:
@@ -43,10 +46,10 @@ def make_query():
     elif search_word:
         print("実装予定")
 
-    current_page = app.current_event.get_query_string_value(name="page_no", default_value=1)
     query["where"] = where
     query["current_page"] = current_page
-    print(query)
+    query["offset"] = (int(current_page) - 1) * per_one_page
+
     return query
 
 def make_pipeline(taxonomy_type, taxonomy_key, keyword):
@@ -68,9 +71,9 @@ def make_pipeline(taxonomy_type, taxonomy_key, keyword):
         {
             "$sort": {
                 "post_date": -1
-            }
+            },
         }
-    ]    
+    ]
 
 
 
@@ -87,26 +90,26 @@ def get_blog(post_no):
 
 @app.get("/api/blogs")
 def get_blogs():
-    query = make_query()
     try:
-        offset = (int(query["current_page"]) - 1) * per_one_page
+        query = make_query()
         if "pipeline" in query:
+            query["pipeline"].append({"$skip": query["offset"]})
+            query["pipeline"].append({"$limit": per_one_page})
             blogs = list(collection.aggregate(query["pipeline"]))
         else:
-            blogs = list(collection.find(query["where"]).sort("post_date", -1).skip(offset).limit(per_one_page))
+            blogs = list(collection.find(query["where"]).sort("post_date", -1).skip(query["offset"]).limit(per_one_page))
         if len(blogs) > 0:
             res = make_response(blogs, query)
             return respond(200, res)
         else:
             return respond(404, {"error": "not found"})
     except Exception as e:
-        return respond(500, {"error": str(e)})
+        stack_trace = traceback.format_exc()
+        return respond(500, {"error": str(e), "stack_trace": stack_trace})
 
 def make_response(items, query):
     total_items_count = collection.count_documents(query["where"])
     total_pages = (total_items_count + per_one_page - 1) // per_one_page  # 総ページ数を計算
-    # ページに応じた開始・終了インデックスを計算
-    start_index = (int(query["current_page"]) - 1) * per_one_page
     
     # 指定範囲のデータを取得
     return {

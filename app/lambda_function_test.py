@@ -1,28 +1,35 @@
 import unittest
 import os
-#from unittest.mock import patch, MagicMock
+from unittest.mock import patch, MagicMock
+from ddt import ddt, data, unpack
 #from bson.objectid import ObjectId
 #import json
 
 # ハンドラー関数が定義されたファイルからインポートします。
-from lambda_function import check_url
+from lambda_function import make_query
 
+@ddt
 class TestBlogHandler(unittest.TestCase):
+    @data(
+        ({"page_no": 1}, {"where": {}, "current_page": 1, "offset": 0}),
+        ({"page_no": 3}, {"where": {}, "current_page": 3, "offset": 20}),
+        ({"category": "perl", "page_no": 1}, [{'$lookup':{'as':'details','foreignField':'no','from':'labels','localField':'categories'}},{'$match':{'details.name':'perl','details.type':'category'}},{'$sort':{'post_date':-1}}]),
+        ({"tag": "npm", "page_no": 2}, [{'$lookup':{'as':'details','foreignField':'no','from':'labels','localField':'tags'}},{'$match':{'details.name':'npm','details.type':'post_tag'}},{'$sort':{'post_date':-1}}]),
+        ({"year": "2022", "month": "03", "page_no": 3}, {"where":{'post_date': {'$regex': '2022-03.*', '$options': 's'}}, "current_page": 3, "offset": 20}),
+    )
+    @unpack
+    @patch('lambda_function.app')  # app をモックする
+    def test_check_url_for_category(self, input_data, expected, mock_app):
 
-    def test_check_url_for_category(self):
-        url_cases = [
-            {"input": "/api", "expected": ["index", [""]]},
-        #    {"input": "/api/category/technology", "expected": ["index", ["technology"]]},
-        #    {"input": "/api/category/technology/page/3", "expected": ["index", ["technology"]]},
-        #    {"input": "/api/category/technology", "expected": ["index", ["technology"]]},
-        #    {"input": "/api/category/technology", "expected": ["index", ["technology"]]},
-        #    {"input": "/api/category/technology", "expected": ["index", ["technology"]]},
-        #    {"input": "/api/category/technology", "expected": ["index", ["technology"]]},            
-        ]
-        for url_case in url_cases:
-            query = check_url(url_case["input"])
-            print(query)    
+        mock_event = MagicMock()
+        mock_event.get_query_string_value.side_effect = lambda name, default_value: input_data.get(name, "")
+        mock_app.current_event = mock_event
 
+        query = make_query()
+        if "category" in input_data or "tag" in input_data:
+            self.assertEqual(query["pipeline"], expected)
+        else:
+            self.assertEqual(query, expected)
 
     #@patch("blog_handler.collection")
     #def test_get_blog_found(self, mock_collection):
