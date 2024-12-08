@@ -14,7 +14,7 @@ cors_config = CORSConfig(allow_origin="*", max_age=300)
 app = APIGatewayRestResolver(cors=cors_config)
 
 # DocumentDB クライアントの設定
-doc_db_protocol = urllib.parse.quote_plus(os.getenv('DOC_DB_PROTOCOL'))
+doc_db_protocol = os.getenv('DOC_DB_PROTOCOL')
 doc_db_user = urllib.parse.quote_plus(os.getenv('DOC_DB_USER'))
 doc_db_pass = urllib.parse.quote_plus(os.getenv('DOC_DB_PASS'))
 doc_db_host = urllib.parse.quote_plus(os.getenv('DOC_DB_HOST'))
