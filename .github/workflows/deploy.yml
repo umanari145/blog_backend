@@ -27,8 +27,7 @@ jobs:
       - name: run test on docker-compose
         run: |
           docker compose --env-file .env.ci up -d
-          docker exec blog_python_lambda printenv
-          docker exec -T blog_python_lambda python lambda_function_test.py
+          docker exec -i blog_python_lambda python lambda_function_test.py
 
   deploy:
     needs: test
