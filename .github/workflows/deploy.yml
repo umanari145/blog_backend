@@ -29,7 +29,7 @@ jobs:
       #  run: python app/lambda_function_test.py
       - name: run test on docker-compose
         run: |
-          docker compose up -d --env-file .env.ci
+          docker compose --env-file .env.ci up -d 
           docker exec blog_python_lambda python lambda_function_test.py
 
   deploy:
