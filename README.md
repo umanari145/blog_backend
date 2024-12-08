@@ -1,13 +1,15 @@
-# blog
+# blog_backend
 
 [blog](https://github.com/umanari145/blog)のapp(backend)を切り出し
 
 ### GitHubActions
 - CI/CDのワークフロー
-    1. mainブランチへのマージ
-    2. ECRにログイン
-    3. ImageのPush
-    4. Lambdaの更新
+    - test
+        1. pythonでの自動テスト
+    - deploy
+        1. ECRにログイン
+        2. ImageのPush
+        3. Lambdaの更新
 
 ### mongoのdbのセットアップ 
 
@@ -15,9 +17,8 @@
 - convet_contents.js データ読み込みとmongoへの直投入
 
 ```
-docker exec -it blog_node sh
-
-cd /app/mongo
+docker exec -it blog_mongo_node sh 
+cd /app
 # テーブル定義
 node init/createDB.js 
 
@@ -29,7 +30,8 @@ Connection to MongoDB closed
 
 # データ読み込み
 node load_contents.js
-
+# メッセージ
+データの移行が完了しました。
 ```
 ### mongodbの実環境
 
@@ -77,8 +79,12 @@ python lambda_function_test.py
 ## 環境変数登録(GithubActions)
 ```
 gh auth login
+ブラウザで認証後
+source ../blog_infra/aws_configure.txt
 gh secret set AWS_ACCOUNT_ID --body "$AWS_ACCOUNT_ID" --repo umanari145/blog_backend
 gh secret set AWS_ACCESS_KEY_ID --body "$AWS_ACCESS_KEY_ID" --repo umanari145/blog_backend
 gh secret set AWS_SECRET_ACCESS_KEY --body "$AWS_SECRET_ACCESS_KEY" --repo umanari145/blog_backend
 gh secret set AWS_REGION --body "$AWS_REGION" --repo umanari145/blog_backend
+gh secret set DOC_DB_USER --body "$DOC_DB_USER" --repo umanari145/blog_backend
+gh secret set DOC_DB_PASS --body "$DOC_DB_PASS" --repo umanari145/blog_backend
 ```

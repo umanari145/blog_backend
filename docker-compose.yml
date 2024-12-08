@@ -8,8 +8,10 @@ services:
     volumes:
         - ./app:/var/task
     environment:
-      - DOC_DB_USER
+      - DOC_DB_PROTOCOL
       - DOC_DB_PASS
+      - DOC_DB_USER
+      - DOC_DB_HOST 
     ports:
       - 9000:8080
     networks:
@@ -23,6 +25,15 @@ services:
     tty: true
     volumes:
         - ./mongo:/app
+    environment:
+      - DOC_DB_PROTOCOL
+      - DOC_DB_PASS
+      - DOC_DB_USER
+      - DOC_DB_HOST
+      - DB_HOST
+      - DB_NAME
+      - DB_PASS
+      - DB_USER
     networks:
       - blog_backend    
 
@@ -38,21 +49,6 @@ services:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: pass
       TZ: Asia/Tokyo
-    networks:
-      - blog_backend
-
-  mongo-express:
-    image: mongo-express
-    container_name: blog_mongo_express
-    restart: always
-    ports:
-      - 8081:8081
-    environment:
-      ME_CONFIG_MONGODB_ADMINUSERNAME: root
-      ME_CONFIG_MONGODB_ADMINPASSWORD: pass
-      ME_CONFIG_MONGODB_SERVER: mongo
-    depends_on:
-      - mongo
     networks:
       - blog_backend
 
