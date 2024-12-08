@@ -4,7 +4,7 @@
 /**/blog_json
 /**/output_test
 .DS_Store
-.env*
+.env
 /app/.cache/*
 /app/__pycache__
 /**/.bash_history
