@@ -4,9 +4,6 @@ on:
   push:
     branches:
       - main
-env:
-  DOC_DB_USER: ${{ secrets.DOC_DB_USER }}
-  DOC_DB_PASS: ${{ secrets.DOC_DB_PASS }}
 
 jobs:
   test:
