@@ -3,7 +3,7 @@ name: Test and Push Docker Image to ECR and Update Lambda
 on:
   push:
     branches:
-      - master
+      - main
 
 jobs:
   test:
