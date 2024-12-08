@@ -1,6 +1,7 @@
 import unittest
 import os
-from pymongo import MongoClient
+import urllib
+import pymongo
 from unittest.mock import patch, MagicMock
 from ddt import ddt, data, unpack
 import json
@@ -11,6 +12,57 @@ from lambda_function import make_query, get_blogs
 @ddt
 class TestBlogHandler(unittest.TestCase):
 
+    @classmethod
+    def setUpClass(cls):
+        # localでの管理者権限
+        uri = "mongodb://root:pass@mongo:27017"
+        cls.client = pymongo.MongoClient(uri)
+        cls.client.drop_database("blogs")
+        cls.blogs = cls.client["blog"]
+        cls.posts = cls.blogs["posts"]
+        cls.labels = cls.blogs["labels"]
+        cls.labels.insert_many(cls.import_labels())
+        cls.posts.insert_many(cls.import_posts())
+
+    @classmethod
+    def import_posts(cls):
+        sample_posts = []
+        for i in range(25):
+            sample_post = {
+                "title": "title-%03d" % (i) ,
+                "contents": "sample-contents-%03d" % (i) ,
+                "post_no": "post-%03d" % (i)
+            }
+
+            if i < 17:
+                # category=perl
+                sample_post["categories"] = [2]
+
+            if i < 22:
+                # tags=npm
+                sample_post["tags"] = [3]
+
+            if  i < 24:
+                # 日付
+                sample_post["post_date"] = "2022-03-%02d" % (i+1)
+            else:
+                sample_post["post_data"] = "2022-04-%02d" % (i+1)
+
+            sample_posts.append(sample_post)
+        return sample_posts
+
+    @classmethod
+    def import_labels(self):
+        sample_labels = []
+        sample_labels.append({ "no": 1, "name": "未分類", "type": "category"})
+        sample_labels.append({ "no": 2, "name": "perl", "type": "category"})
+        sample_labels.append({ "no": 3, "name": "npm", "type": "post_tag"})
+        return sample_labels
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.client.drop_database("blog")
+ 
     @data(
         ({"page_no": 1}, {"where": {}, "current_page": 1, "offset": 0}),
         ({"page_no": 3}, {"where": {}, "current_page": 3, "offset": 20}),
@@ -33,11 +85,11 @@ class TestBlogHandler(unittest.TestCase):
             self.assertEqual(query, expected)
 
     @data(
-        ({"page_no": 1}, {"total_items_count": 1002, "total_pages": 101, "current_page": 1}),
-        ({"page_no": 3}, {"total_items_count": 1002, "total_pages": 101, "current_page": 3}),
+        ({"page_no": 1}, {"total_items_count": 25, "total_pages": 3, "current_page": 1}),
+        ({"page_no": 3}, {"total_items_count": 25, "total_pages": 3, "current_page": 3}),
         ({"category": "perl", "page_no": 1}, {"total_items_count": 17, "total_pages": 2, "current_page": 1}),
-        ({"tag": "npm", "page_no": 2}, {"total_items_count": 24, "total_pages": 3, "current_page": 2}),
-        ({"year": "2017", "month": "03", "page_no": 2}, {"total_items_count": 23, "total_pages": 3, "current_page": 2}),
+        ({"tag": "npm", "page_no": 2}, {"total_items_count": 22, "total_pages": 3, "current_page": 2}),
+        ({"year": "2022", "month": "03", "page_no": 2}, {"total_items_count": 24, "total_pages": 3, "current_page": 2}),
         ({"tag": "hogehoge", "page_no": 2}, {"error": "not found"}),
     )
     @unpack
@@ -57,11 +109,11 @@ class TestBlogHandler(unittest.TestCase):
             del res2["per_one_page"]
         self.assertEqual(res2, expected)
 
-    #@patch("blog_handler.collection")
-    #def test_get_blog_found(self, mock_collection):
-    #    # モックでfind_oneを設定
-    #    mock_collection.find_one.return_value = {"_id": ObjectId(), "title": "Test Blog"}
-#
+    ##@patch("blog_handler.collection")
+    ##def test_get_blog_found(self, mock_collection):
+    ##    # モックでfind_oneを設定
+    ##    mock_collection.find_one.return_value = {"_id": ObjectId(), "title": "Test Blog"}
+##
     #    # テスト用のイベント
     #    event = {
     #        "httpMethod": "GET",

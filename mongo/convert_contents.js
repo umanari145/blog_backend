@@ -57,7 +57,6 @@ async function migrateData() {
     mongoClient = new MongoClient(uri);
     await mongoClient.connect();
     const mongoDb = mongoClient.db(mongoDbName);
-
     await mongoDb.collection("labels").insertMany(terms2);
     // データを変換してMongoDBに挿入
     let count = 0;
