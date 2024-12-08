@@ -18,7 +18,7 @@ jobs:
       - name: get python version
         run: python -V
       - name: unittest for python
-        run: python lambda_function_test.py
+        run: python app/lambda_function_test.py
 
   deploy:
     needs: test
