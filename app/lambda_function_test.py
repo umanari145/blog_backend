@@ -7,7 +7,7 @@ from ddt import ddt, data, unpack
 import json
 
 # ハンドラー関数が定義されたファイルからインポートします。
-from lambda_function import make_query, get_blogs
+from lambda_function import make_query, get_blogs, get_menu_counts
 
 @ddt
 class TestBlogHandler(unittest.TestCase):
@@ -45,7 +45,7 @@ class TestBlogHandler(unittest.TestCase):
                 # 日付
                 sample_post["post_date"] = "2022-03-%02d" % (i+1)
             else:
-                sample_post["post_data"] = "2022-04-%02d" % (i+1)
+                sample_post["post_date"] = "2022-04-%02d" % (i+1)
 
             sample_posts.append(sample_post)
         return sample_posts
@@ -107,6 +107,33 @@ class TestBlogHandler(unittest.TestCase):
         if "per_one_page" in res2:
             del res2["per_one_page"]
         self.assertEqual(res2, expected)
+
+    def test_menu_count(self):
+        menu = get_menu_counts()
+        self.assertEqual(menu, {
+            "categories":[
+                {
+                    "_id":"perl",
+                    "count":17
+                }
+            ],
+            "tags":[
+                {
+                    "_id":"npm",
+                    "count":22
+                }
+            ],
+            "dates":[
+                {
+                    "_id":"2022-03",
+                    "count":24
+                },
+                {
+                    "_id":"2022-04",
+                    "count":1
+                }
+            ]
+        })
 
     ##@patch("blog_handler.collection")
     ##def test_get_blog_found(self, mock_collection):

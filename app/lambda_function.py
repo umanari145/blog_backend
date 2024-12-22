@@ -14,6 +14,7 @@ cors_config = CORSConfig(allow_origin="*", max_age=300)
 app = APIGatewayRestResolver(cors=cors_config)
 
 # DocumentDB クライアントの設定
+# エスケープ処理をすると+が変換されてしまうのであえてしない
 doc_db_protocol = os.getenv('DOC_DB_PROTOCOL')
 doc_db_user = urllib.parse.quote_plus(os.getenv('DOC_DB_USER'))
 doc_db_pass = urllib.parse.quote_plus(os.getenv('DOC_DB_PASS'))
@@ -23,6 +24,63 @@ client = MongoClient(url)
 db = client["blog"] #DB名を設定
 collection = db.get_collection("posts")
 per_one_page = 10
+
+def get_menu_counts():
+    categories = count_menu("categories")
+    tags = count_menu("tags")
+    dates = count_menu("date")
+
+    return {
+        "categories" : list(categories),
+        "tags" : list(tags),
+        "dates" : list(dates),
+    }
+
+def count_menu(menu_type):
+
+    if menu_type == "categories" or menu_type == "tags":
+        pipeline = [
+            {
+                "$unwind": "$" + menu_type
+            },
+            {
+                "$lookup": {
+                    "from": "labels",
+                    "localField": menu_type,
+                    "foreignField": "no",
+                    "as": "details"
+                }
+            },
+            {
+                "$unwind": "$details"
+            },
+            {
+                "$group": {
+                    "_id": "$details.name",
+                    "count": { "$sum": 1 }
+                }
+            },
+            {
+                "$sort": { "count": -1 }
+            }
+        ]
+    elif menu_type == "date":
+        pipeline = [
+            {
+                "$group": {
+                    "_id": { 
+                        "$dateToString": { "format": "%Y-%m", 
+                        "date": { "$toDate": "$post_date" } } 
+                    },
+                    "count": { "$sum": 1 }
+                }
+            },
+            {
+                "$sort": { "_id": 1 }
+            }
+        ];
+
+    return collection.aggregate(pipeline);
 
 
 def make_query():
@@ -77,7 +135,16 @@ def make_pipeline(taxonomy_type, taxonomy_key, keyword):
         }
     ]
 
-
+@app.get("/api/menus")
+def get_menus():
+    try:
+        menus = get_menu_counts()
+        if menus:
+            return respond(200, menus)
+        else:
+            return respond(404, {"error": "not found"})
+    except Exception as e:
+        return respond(500, {"error": str(e)})
 
 @app.get("/api/blogs/<post_no>")
 def get_blog(post_no):
