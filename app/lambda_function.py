@@ -88,7 +88,7 @@ def make_query():
     tag = app.current_event.get_query_string_value(name="tag", default_value="")
     year = app.current_event.get_query_string_value(name="year", default_value="")
     month = app.current_event.get_query_string_value(name="month", default_value="")
-    search_word = app.current_event.get_query_string_value(name="month", default_value="")
+    search_word = app.current_event.get_query_string_value(name="search_word", default_value="")
     current_page = app.current_event.get_query_string_value(name="page_no", default_value=1)
     query = {}
     where = {}
@@ -104,7 +104,9 @@ def make_query():
             "$options": "s"
         }
     elif search_word:
-        print("実装予定")
+        where["contents"] = {
+            "$regex": search_word ,
+        }
 
     query["where"] = where
     query["current_page"] = current_page

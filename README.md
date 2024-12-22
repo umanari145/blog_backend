@@ -92,3 +92,8 @@ gh secret set AWS_REGION --body "$AWS_REGION" --repo umanari145/blog_backend
 gh secret set DOC_DB_USER --body "$DOC_DB_USER" --repo umanari145/blog_backend
 gh secret set DOC_DB_PASS --body "$DOC_DB_PASS" --repo umanari145/blog_backend
 ```
+
+export DOC_DB_PASS=pass
+export DOC_DB_PROTOCOL=mongodb
+export DOC_DB_USER=root
+export DOC_DB_HOST=mongo

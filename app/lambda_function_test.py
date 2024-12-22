@@ -68,6 +68,7 @@ class TestBlogHandler(unittest.TestCase):
         ({"category": "perl", "page_no": 1}, [{'$lookup':{'as':'details','foreignField':'no','from':'labels','localField':'categories'}},{'$match':{'details.name':'perl','details.type':'category'}},{'$sort':{'post_date':-1}}]),
         ({"tag": "npm", "page_no": 2}, [{'$lookup':{'as':'details','foreignField':'no','from':'labels','localField':'tags'}},{'$match':{'details.name':'npm','details.type':'post_tag'}},{'$sort':{'post_date':-1}}]),
         ({"year": "2022", "month": "03", "page_no": 3}, {"where":{'post_date': {'$regex': '2022-03.*', '$options': 's'}}, "current_page": 3, "offset": 20}),
+        ({"search_word": "-contents-", "page_no": 1}, {"where":  {'contents':{'$regex':'-contents-'}}, "current_page": 1, "offset": 0}),
     )
     @unpack
     @patch('lambda_function.app')  # app をモックする
@@ -90,6 +91,9 @@ class TestBlogHandler(unittest.TestCase):
         ({"tag": "npm", "page_no": 2}, {"total_items_count": 22, "total_pages": 3, "current_page": 2}),
         ({"year": "2022", "month": "03", "page_no": 2}, {"total_items_count": 24, "total_pages": 3, "current_page": 2}),
         ({"tag": "hogehoge", "page_no": 2}, {"error": "not found"}),
+        ({"search_word": "-contents-00", "page_no": 1}, {'current_page': 1, 'total_items_count': 10, 'total_pages': 1}),
+        ({"search_word": "-contents-", "page_no": 1}, {'current_page': 1, 'total_items_count': 25, 'total_pages': 3}),
+        ({"search_word": "-contents-", "page_no": 2}, {'current_page': 2, 'total_items_count': 25, 'total_pages': 3}),
     )
     @unpack
     @patch('lambda_function.app')  # app をモックする
