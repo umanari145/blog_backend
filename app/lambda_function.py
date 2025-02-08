@@ -147,7 +147,6 @@ def get_menus():
             return respond(404, {"error": "not found"})
     except Exception as e:
         return respond(500, {"error": str(e)})
-
 @app.get("/api/blogs/<post_no>")
 def get_blog(post_no):
     try:
@@ -201,28 +200,31 @@ def make_response(items, query):
         "per_one_page": per_one_page
     }
 
-#def create_blog(event):
-#    try:
-#        data = json.loads(event['body'])
-#        result = collection.insert_one(data)
-#        data['_id'] = str(result.inserted_id)
-#        return respond(201, {"message": "Blog created", "data": data})
-#    except Exception as e:
-#        return respond(500, {"error": str(e)})
-#
-#def update_blog(blog_id, event):
-#    try:
-#        data = json.loads(event['body'])
-#        result = collection.update_one(
-#            {"_id": blog_id},
-#            {"$set": data}
-#        )
-#        if result.matched_count == 0:
-#            return respond(404, {"error": "Blog not found"})
-#        return respond(200, {"message": "Blog updated"})
-#    except Exception as e:
-#        return respond(500, {"error": str(e)})
-#
+@app.post("/api/blogs")
+def create_blog():
+    try:
+        blog = app.current_event.json_body
+        result = collection.insert_one(blog)
+        data = {}
+        data['_id'] = str(result.inserted_id)
+        return respond(201, {"message": "Blog created", "data": data})
+    except Exception as e:
+        return respond(500, {"error": str(e)})
+
+@app.put("/api/blogs/<post_no>")
+def update_blog(post_no):
+    try:
+        data = json.loads(event['body'])
+        result = collection.update_one(
+            {"_id": blog_id},
+            {"$set": data}
+        )
+        if result.matched_count == 0:
+            return respond(404, {"error": "Blog not found"})
+        return respond(200, {"message": "Blog updated"})
+    except Exception as e:
+        return respond(500, {"error": str(e)})
+
 #def delete_blog(blog_id):
 #    try:
 #        result = collection.delete_one({"_id": blog_id})
