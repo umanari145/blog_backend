@@ -214,25 +214,19 @@ def create_blog():
 @app.put("/api/blogs/<post_no>")
 def update_blog(post_no):
     try:
-        data = json.loads(event['body'])
-        result = collection.update_one(
-            {"_id": blog_id},
-            {"$set": data}
-        )
-        if result.matched_count == 0:
+        post_no = app.current_event.path_parameters.get("post_no")
+        blog = collection.find_one({"post_no": post_no})
+        if blog.matched_count == 0:
             return respond(404, {"error": "Blog not found"})
+
+        param = app.current_event.json_body
+　      result = collection.update_one(
+            {"_id": blog["_id"]},
+            {"$set": param}
+        )
         return respond(200, {"message": "Blog updated"})
     except Exception as e:
         return respond(500, {"error": str(e)})
-
-#def delete_blog(blog_id):
-#    try:
-#        result = collection.delete_one({"_id": blog_id})
-#        if result.deleted_count == 0:
-#            return respond(404, {"error": "Blog not found"})
-#        return respond(200, {"message": "Blog deleted"})
-#    except Exception as e:
-#        return respond(500, {"error": str(e)})
 
 def handler(event, context):
     return app.resolve(event, context)
