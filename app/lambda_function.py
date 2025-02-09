@@ -214,13 +214,12 @@ def create_blog():
 @app.put("/api/blogs/<post_no>")
 def update_blog(post_no):
     try:
-        post_no = app.current_event.path_parameters.get("post_no")
         blog = collection.find_one({"post_no": post_no})
-        if blog.matched_count == 0:
+        if blog is None:
             return respond(404, {"error": "Blog not found"})
 
         param = app.current_event.json_body
-　      result = collection.update_one(
+        result = collection.update_one(
             {"_id": blog["_id"]},
             {"$set": param}
         )
