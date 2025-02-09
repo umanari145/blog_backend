@@ -13,7 +13,7 @@ from lambda_function import make_query, get_blogs, get_menu_counts, create_blog,
 class TestBlogHandler(unittest.TestCase):
 
     @classmethod
-    def setUpClass(cls):
+    def setUp(cls):
         # localでの管理者権限
         uri = "mongodb://root:pass@mongo:27017"
         cls.client = pymongo.MongoClient(uri)
@@ -59,8 +59,9 @@ class TestBlogHandler(unittest.TestCase):
         return sample_labels
 
     @classmethod
-    def tearDownClass(cls):
+    def tearDown(cls):
         cls.client.drop_database("blog")
+        cls.client.close()
  
     @data(
         ({"page_no": 1}, {"where": {}, "current_page": 1, "offset": 0}),
@@ -72,7 +73,7 @@ class TestBlogHandler(unittest.TestCase):
     )
     @unpack
     @patch('lambda_function.app')  # app をモックする
-    def tst_check_url_for_category(self, input_data, expected, mock_app):
+    def test_check_url_for_category(self, input_data, expected, mock_app):
 
         mock_event = MagicMock()
         mock_event.get_query_string_value.side_effect = lambda name, default_value: input_data.get(name, "")
@@ -97,7 +98,7 @@ class TestBlogHandler(unittest.TestCase):
     )
     @unpack
     @patch('lambda_function.app')  # app をモックする
-    def tst_get_blogs(self, input_data, expected, mock_app):
+    def test_get_blogs(self, input_data, expected, mock_app):
 
         mock_event = MagicMock()
         mock_event.get_query_string_value.side_effect = lambda name, default_value: input_data.get(name, "")
@@ -112,7 +113,7 @@ class TestBlogHandler(unittest.TestCase):
             del res2["per_one_page"]
         self.assertEqual(res2, expected)
 
-    def tst_menu_count(self):
+    def test_menu_count(self):
         menu = get_menu_counts()
         self.assertEqual(menu, {
             "categories":[
@@ -147,27 +148,24 @@ class TestBlogHandler(unittest.TestCase):
         mock_event = MagicMock()
         mock_event.json_body = {
             "title": "Test Blog",
-            "content": "This is a test",
+            "contents": "This is a test",
             "post_no": "post-789",
             "post_date": "2024-02-08",
             "categories": [23],
             "tags": [45, 56]
         }
         mock_app.current_event = mock_event
-        
         # メソッド実行
         create_response = create_blog()
-        
+        self.assertEqual(201, create_response['statusCode'])
         blog_response = get_blog("post-789")
-        print(blog_response)   
-
-        ## 期待するレスポンス
-        #expected_response = {
-        #    "statusCode": 201,
-        #    "body": '{"message": "Blog created", "data": {"_id": "1234567890abcdef"}}'
-        #}
-
-        #self.assertEqual(response, expected_response)
+        blog_dic = json.loads(blog_response["body"])
+        self.assertEqual(200, blog_response["statusCode"])
+        self.assertEqual("Test Blog", blog_dic["title"])
+        self.assertEqual("This is a test", blog_dic["contents"])
+        self.assertEqual("post-789", blog_dic["post_no"])
+        self.assertEqual([23], blog_dic["categories"])
+        self.assertEqual([45, 56], blog_dic["tags"])
 
 
 if __name__ == "__main__":

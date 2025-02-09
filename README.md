@@ -81,6 +81,17 @@ dockerの外から
 docker exec blog_python_lambda python lambda_function_test.py
 ```
 
+### unittest
+@ddt・・・dataのdataProviderなど複数パターンをテストしたいとき<br>
+setUpClass・・テストが起動時に1回のみ実行される<br>
+setUp・・メソッドの開始ごとに実行される<br>
+tearDown・・メソッドの終了ごとに実行される<br>
+tearDownClass・・テストが終了時に1回のみ実行される<br>
+MagicMock・・リクエストパラメーターのMock
+
+モックについて<br>
+https://zenn.dev/knowledgework/articles/mechanism-pytest-mock
+
 ## 環境変数登録(GithubActions)
 ```
 gh auth login
