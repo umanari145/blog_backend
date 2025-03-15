@@ -115,16 +115,20 @@ class TestBlogHandler(unittest.TestCase):
 
     def test_menu_count(self):
         menu = get_menu_counts()
+        #print(menu)
+        #os._exit(0)
         self.assertEqual(menu, {
             "categories":[
                 {
-                    "_id":"perl",
+                    "_id": 2,
+                    "name":"perl",
                     "count":17
                 }
             ],
             "tags":[
                 {
-                    "_id":"npm",
+                    "_id": 3,
+                    "name":"npm",
                     "count":22
                 }
             ],
@@ -139,8 +143,6 @@ class TestBlogHandler(unittest.TestCase):
                 }
             ]
         })
-
-
 
     @patch('lambda_function.app')
     def test_create_blog_success(self, mock_app):
@@ -212,10 +214,11 @@ class TestBlogHandler(unittest.TestCase):
         self.assertEqual([45, 57], blog_dic["tags"])
 
 if __name__ == "__main__":
+    # 全実行 (個別テストの場合はコメントアウト)
     unittest.main()
 
     #特定のメソッドの実行
     #suite = unittest.TestSuite()
-    #suite.addTest(TestBlogHandler('test_update_blog_404'))  # ここで特定のテストメソッドを追加
+    #suite.addTest(TestBlogHandler('test_menu_count'))  # ここで特定のテストメソッドを追加
     #runner = unittest.TextTestRunner()
     #runner.run(suite)

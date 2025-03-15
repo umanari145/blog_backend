@@ -70,8 +70,16 @@ https://qiita.com/eiji-noguchi/items/e226ed7b8da2cd85a06a
 python-lambda-local -f handler lambda_function.py event/****.json -e env.json -t 10
 ```
 
-テスト
+### テスト
 DB作成をしておくこと！
+そうしないと下記のようなエラーが出る
+```
+pymongo.errors.OperationFailure: Authentication failed., full error: {'ok': 0.0, 'errmsg': 'Authentication failed.', 'code': 18, 'codeName': 'AuthenticationFailed'}
+
+# このコマンドを打つこと
+node init/createDB.js 
+```
+
 ```
 docker exec -it blog_python_lambda bash
 python lambda_function_test.py 

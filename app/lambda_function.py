@@ -14,7 +14,7 @@ cors_config = CORSConfig(allow_origin="*", max_age=300)
 app = APIGatewayRestResolver(cors=cors_config)
 
 # DocumentDB クライアントの設定
-# エスケープ処理をすると+が変換されてしまうのであえてしない
+# エスケープ処理をすると+が変換されてしまうのであえてしない 
 doc_db_protocol = os.getenv('DOC_DB_PROTOCOL')
 doc_db_user = urllib.parse.quote_plus(os.getenv('DOC_DB_USER'))
 doc_db_pass = urllib.parse.quote_plus(os.getenv('DOC_DB_PASS'))
@@ -56,8 +56,16 @@ def count_menu(menu_type):
             },
             {
                 "$group": {
-                    "_id": "$details.name",
+                    "_id": "$details.no",
+                    "name": { "$first": "$details.name" },
                     "count": { "$sum": 1 }
+                }
+            },
+            {
+                "$project": {  # フィールドを整形
+                    "no": "$id",
+                    "name": "$name",
+                    "count": "$count",
                 }
             },
             {
@@ -81,7 +89,6 @@ def count_menu(menu_type):
         ];
 
     return collection.aggregate(pipeline);
-
 
 def make_query():
     category = app.current_event.get_query_string_value(name="category", default_value="")
