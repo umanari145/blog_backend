@@ -120,25 +120,25 @@ class TestBlogHandler(unittest.TestCase):
         self.assertEqual(menu, {
             "categories":[
                 {
-                    "_id": 2,
+                    "no": 2,
                     "name":"perl",
                     "count":17
                 }
             ],
             "tags":[
                 {
-                    "_id": 3,
+                    "no": 3,
                     "name":"npm",
                     "count":22
                 }
             ],
             "dates":[
                 {
-                    "_id":"2022-03",
+                    "name":"2022-03",
                     "count":24
                 },
                 {
-                    "_id":"2022-04",
+                    "name":"2022-04",
                     "count":1
                 }
             ]

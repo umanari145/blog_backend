@@ -63,13 +63,14 @@ def count_menu(menu_type):
             },
             {
                 "$project": {  # フィールドを整形
-                    "no": "$id",
+                    "no": "$_id",
                     "name": "$name",
                     "count": "$count",
+                    "_id": 0
                 }
             },
             {
-                "$sort": { "count": -1 }
+                "$sort": { "name": 1 }
             }
         ]
     elif menu_type == "date":
@@ -84,7 +85,14 @@ def count_menu(menu_type):
                 }
             },
             {
-                "$sort": { "_id": 1 }
+                "$project": {  # フィールドを整形
+                    "name": "$_id",  # "_id" を "name" に変換
+                    "count": "$count",  # "count" をそのまま保持
+                    "_id": 0  # "_id" を非表示にする
+                }
+            },                
+            {
+                "$sort": { "name": 1 }
             }
         ];
 
