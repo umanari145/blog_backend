@@ -23,8 +23,8 @@ url = '%s://%s:%s@%s/' % (doc_db_protocol, doc_db_user, doc_db_pass, doc_db_host
 client = MongoClient(url)
 db = client["blog"] #DB名を設定
 collection = db.get_collection("posts")
+login_collection = db.get_collection("users")
 per_one_page = 10
-
 def get_menu_counts():
     categories = count_menu("categories")
     tags = count_menu("tags")
@@ -239,6 +239,22 @@ def update_blog(post_no):
             {"$set": param}
         )
         return respond(200, {"message": "Blog updated"})
+    except Exception as e:
+        return respond(500, {"error": str(e)})
+
+
+@app.post("/api/login")
+def login():
+    try:
+        login = app.current_event.json_body
+        user = login_collection.find_one({
+            "email": login['email'],
+            "password": login['password']
+        })
+        if user:
+            return respond(200, {"user": user})
+        else:
+            return respond(401, {"error": "Authorized"})
     except Exception as e:
         return respond(500, {"error": str(e)})
 

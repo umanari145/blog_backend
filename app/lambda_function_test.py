@@ -7,7 +7,7 @@ from ddt import ddt, data, unpack
 import json
 
 # ハンドラー関数が定義されたファイルからインポートします。
-from lambda_function import make_query, get_blogs, get_menu_counts, create_blog, get_blog, update_blog
+from lambda_function import make_query, get_blogs, get_menu_counts, create_blog, get_blog, update_blog, login
 
 @ddt
 class TestBlogHandler(unittest.TestCase):
@@ -20,8 +20,10 @@ class TestBlogHandler(unittest.TestCase):
         cls.blogs = cls.client["blog"]
         cls.posts = cls.blogs["posts"]
         cls.labels = cls.blogs["labels"]
+        cls.users = cls.blogs["users"]
         cls.labels.insert_many(cls.import_labels())
         cls.posts.insert_many(cls.import_posts())
+        cls.users.insert_many(cls.import_users())
 
     @classmethod
     def import_posts(cls):
@@ -57,6 +59,13 @@ class TestBlogHandler(unittest.TestCase):
         sample_labels.append({ "no": 2, "name": "perl", "type": "category"})
         sample_labels.append({ "no": 3, "name": "npm", "type": "post_tag"})
         return sample_labels
+
+
+    @classmethod
+    def import_users(self):
+        sample_users = []
+        sample_users.append({ "email": "hoge@gmail.com", "password": "hoge"})
+        return sample_users
 
     @classmethod
     def tearDown(cls):
@@ -213,12 +222,43 @@ class TestBlogHandler(unittest.TestCase):
         self.assertEqual([4], blog_dic["categories"])
         self.assertEqual([45, 57], blog_dic["tags"])
 
+    @patch('lambda_function.app')
+    def test_login_success(self, mock_app):
+        mock_event = MagicMock()
+        mock_event.json_body = {
+            "email": "hoge@gmail.com",
+            "password": "hoge"
+        }
+        mock_app.current_event = mock_event
+
+        # ブログの更新
+        login_response = login()
+        self.assertEqual(200, login_response['statusCode'])
+        body = json.loads(login_response["body"])
+        self.assertEqual("hoge@gmail.com", body["user"]["email"])
+        self.assertEqual("hoge", body["user"]["password"])
+
+    @patch('lambda_function.app')
+    def test_login_fail(self, mock_app):
+        mock_event = MagicMock()
+        mock_event.json_body = {
+            "email": "hoge@gmail.com",
+            "password": "hogea"
+        }
+        mock_app.current_event = mock_event
+
+        # ブログの更新
+        login_response = login()
+        body = json.loads(login_response["body"])
+        self.assertEqual(401, login_response['statusCode'])
+        self.assertEqual('Authorized', body["error"])
+
 if __name__ == "__main__":
     # 全実行 (個別テストの場合はコメントアウト)
     unittest.main()
 
     #特定のメソッドの実行
     #suite = unittest.TestSuite()
-    #suite.addTest(TestBlogHandler('test_menu_count'))  # ここで特定のテストメソッドを追加
+    #suite.addTest(TestBlogHandler('test_login_success'))  # ここで特定のテストメソッドを追加
     #runner = unittest.TextTestRunner()
     #runner.run(suite)
